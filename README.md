@@ -50,28 +50,28 @@ delete from layoffs_staging2 where row_num > 1;
 ```
 Now the duplicate row is removed from the newly created table
 
-![2]()
+![2](Images/2.layoffs_staging2.png)
 
 ```
 -- Standardise the Data
 Select *
 from layoffs_staging2;
 
--- checking for whitespaces in 'company' field
+-- Checking for whitespaces in 'company' field
 select * from layoffs where company != trim(company);
 -- trim those out
 update layoffs_staging2 set company = trim(company);
 ```
-![4]()
+![4](Images/4.company_whitespace.png)
 
 ```
--- checking 'industry' field
+-- Checking 'industry' field
 select distinct industry 
 from layoffs_staging2 
 order by 1;
 -- it is found that Crypto Currency has 3 similar fields with bit different wording
 
--- so we find the most common ones
+-- So we find the most common ones
 select industry, count(*) 
 from layoffs_staging2 
 group by industry 
@@ -79,7 +79,7 @@ having industry like '%Crypto%';
 ```
 So the result is shown that 'Crypto' is the most common field
 
-![6]()
+![6](Images/6.common_crypto_field.png)
 
 ```
 -- Update the lesser similar fields into 'Crypto'
@@ -87,7 +87,7 @@ update layoffs_staging2
 set industry = 'Crypto'
 where industry like '%Crypto%';
 
--- checking 'country' field
+-- Checking 'country' field
 select distinct country from layoffs_staging2 order by 1
 ;
 -- There are two United States fields, we will cut '.' away
@@ -95,11 +95,11 @@ update layoffs_staging2
 set country = trim(trailing '.' from country)
 where country like 'United States%';
 ```
-![8]()
+![8](Images/8.similar_country.png)
 
 When sorted
 
-![9]()
+![9](Images/9.similar_country_sorted.png)
 
 ```
 -- Convert 'date' field into date format
@@ -109,7 +109,7 @@ set `date` = str_to_date(`date`, '%m/%d/%Y');
 alter table layoffs_staging2
 modify column `date` date;
 ```
-![10]()
+![10](Images/10.convert_date.png)
 
 ```
 -- Null Values or blank values
@@ -140,7 +140,7 @@ set t1.industry = t2.industry
 where t1.industry is null
 and t2.industry is not null;
 ```
-![13]()
+![13](Images/13.null_industry_comparison_after.png)
 
 ```
 -- Remove unnecessary/irrelevant Columns
@@ -156,7 +156,7 @@ from layoffs_staging2
 where total_laid_off is null 
 and percentage_laid_off is null;
 ```
-![14]()
+![14](Images/14.no_layoff_number.png)
 
 ```
 -- Lastly, remove row_num column
@@ -168,7 +168,7 @@ select * from layoffs_staging2
 
 As a result, the original dataset is cleaned and stored in a duplicate named 'layoffs_staging2'.
 
-![15]()
+![15](Images/15.final_result.png)
 
 We then use this cleaned dataset for further analysis.
 
@@ -177,7 +177,7 @@ We then use this cleaned dataset for further analysis.
 -- Checking data period
 select min(`date`), max(`date`) from layoffs_staging2;
 ```
-![16]()
+![16](Images/16.analysis1.png)
 
 ```
 -- The companies that laid off all employees, likely closing down
@@ -186,7 +186,7 @@ from layoffs_staging2
 where percentage_laid_off = 1
 order by funds_raised_millions desc;
 ```
-![17]()
+![17](Images/17.analysis2.png)
 
 ```
 -- Companies with the highest number of layoff and their industries
@@ -195,7 +195,7 @@ from layoffs_staging2
 group by company, industry
 order by total_laid_off desc;
 ```
-![18]()
+![18](Images/18.analysis3.png)
 
 ```
 -- Industries with the highest number of layoff and their industries
@@ -204,7 +204,7 @@ from layoffs_staging2
 group by industry
 order by total_laid_off desc;
 ```
-![19]()
+![19](Images/19.analysis4.png)
 
 ```
 -- Year with the highest number of layoff and their industries
@@ -213,16 +213,16 @@ from layoffs_staging2
 group by 1
 order by 2 desc;
 ```
-![20]()
+![20](Images/20.analysis5.png)
 
 ```
--- stage of the company with the highest number of layoff and their industries
+-- Stage of the company with the highest number of layoff and their industries
 select stage, sum(total_laid_off) as total_laid_off
 from layoffs_staging2
 group by 1
 order by 2 desc;
 ```
-![21]()
+![21](Images/21.analysis6.png)
 
 ```
 -- Explore layoff progression by month
@@ -239,7 +239,7 @@ select `month`, total_laid_off
 from Rolling_Total
 ;
 ```
-![22]()
+![22](Images/22.analysis7.png)
 
 ```
 -- Top 5 company with most layoffs separated by years
@@ -258,7 +258,7 @@ select *
 from Company_Year_Rank
 where ranking <= 5;
 ```
-![23]()
+![23](Images/23.analysis8.png)
 
 
 ### Let's talk about some findings.
